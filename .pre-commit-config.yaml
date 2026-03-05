@@ -1,0 +1,41 @@
+---
+# Git pre-commit hook
+
+repos:
+  - repo: local
+    hooks:
+      - id: trailing-whitespace
+        name: Remove trailing whitespace
+        entry: >-
+          bash -c '
+            git diff --cached --name-only -z --diff-filter=ACMR |
+            xargs -0 perl -pi -e "s/[ \t]+$//" &&
+            git diff --cached --name-only -z --diff-filter=ACMR |
+            xargs -0 git add'
+        language: system
+        pass_filenames: false
+
+      - id: terraform-fmt
+        name: terraform fmt (recursive)
+        entry: bash -c 'terraform fmt -recursive && git add -u .'
+        language: system
+        pass_filenames: false
+
+      - id: terraform-validate
+        name: terraform validate
+        entry: >-
+          bash -c 'cd stacks &&
+            for d in $(find . -mindepth 1 -maxdepth 1 -type d); do
+              echo "Validating env: $d";
+              (cd $d ; terraform init && terraform validate) ;
+            done'
+        pass_filenames: false
+        language: system
+
+      - id: trufflehog-secrets-scanner
+        name: trufflehog
+        entry: bash -c 'trufflehog filesystem --no-update'
+        pass_filenames: true
+        files: ^(modules|stacks)/.*\.tf$
+        types: [file]
+        language: system
