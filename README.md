@@ -23,3 +23,7 @@ pip install pre-commit
 pre-commit install
 ```
 
+## Bootstrapping Azure remote state backend
+
+Directions are in the [[stacks/00-bootstrap/README.md]] file
+
